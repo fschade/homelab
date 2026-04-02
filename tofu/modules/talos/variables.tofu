@@ -56,5 +56,19 @@ variable "nodes" {
       }), {})
     })
   }))
+
+  validation {
+    condition = alltrue([
+      for _, node in var.nodes :startswith(node.server.kubernetes.version, "v")
+    ])
+    error_message = "Kubernetes version must start with 'v', such as 'v1.28.0'"
+  }
+
+  validation {
+    condition = alltrue([
+      for _, node in var.nodes :startswith(node.server.talos.version, "v")
+    ])
+    error_message = "Talos version must start with 'v', such as 'v1.28.0'"
+  }
 }
 
