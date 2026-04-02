@@ -1,0 +1,15 @@
+machine:
+  network:
+    interfaces:
+      - interface: ${network_interface}
+        dhcp: false
+        addresses:
+          - ${ip}/${subnet_mask}
+        routes:
+          - network: "0.0.0.0/0"
+            gateway: ${gateway}
+---
+apiVersion: v1alpha1
+kind: HostnameConfig
+hostname: ${hostname}
+auto: off
