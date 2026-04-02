@@ -13,20 +13,16 @@ terraform {
 }
 
 provider "proxmox" {
-  endpoint = "https://10.42.10.6:8006/"
+  endpoint = var.proxmox.endpoint
   username = var.proxmox_username
   password = var.proxmox_password
-  insecure = true
+  insecure = var.proxmox.insecure
 
   ssh {
-    agent = true
+    agent = var.proxmox.ssh.agent
 
     dynamic "node" {
-      for_each = {
-        (local.CONST.NODE_NAME.PVE_THINKCENTRE_01) = "10.42.10.6"
-        (local.CONST.NODE_NAME.PVE_THINKCENTRE_02) = "10.42.10.7"
-        (local.CONST.NODE_NAME.PVE_ZIMABLADE_01) = "10.42.10.8"
-      }
+      for_each = var.proxmox.ssh.nodes
 
       content {
         name    = node.key

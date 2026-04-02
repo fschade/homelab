@@ -9,7 +9,7 @@ variable "cluster" {
       enabled = optional(bool, true)
       skip_kubernetes_checks = optional(bool, false)
       timeouts = optional(object({
-        read = optional(string, "10m")
+        read = optional(string, "30m")
       }), {})
     }), {})
   })

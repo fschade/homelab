@@ -3,10 +3,6 @@ output "debug" {
   sensitive = true
 }
 
-output "CONST" {
-  value = local.CONST
-}
-
 output "talos_client_configuration" {
   value     = data.talos_client_configuration.this.talos_config
   sensitive = true

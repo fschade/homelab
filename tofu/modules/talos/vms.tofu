@@ -41,14 +41,13 @@ resource "proxmox_virtual_environment_vm" "this" {
   disk {
     datastore_id = each.value.vm.disk.datastore_id
     interface    = "scsi0"
-    cache        = "writethrough"
     discard      = "on"
     ssd          = true
-    file_format  = "raw"
     size         = each.value.vm.disk.size
     file_id      = proxmox_virtual_environment_download_file.this[sha256(jsonencode({
-      node_name     = each.value.vm.datacenter.node
+      node_name    = each.value.vm.datacenter.node
       datastore_id = each.value.vm.image.datastore_id
+      iso          = each.value.server.talos.iso
       talos_version = each.value.server.talos.version
     }))].id
   }
