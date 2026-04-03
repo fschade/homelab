@@ -1,9 +1,11 @@
 resource "proxmox_virtual_environment_vm" "this" {
-  for_each = var.nodes
+  for_each = {
+    for key, value in var.nodes: coalesce(value.vm.id, key) => value
+  }
 
   node_name = each.value.vm.datacenter.node
   name      = each.value.name
-  vm_id         = each.value.vm.id
+  vm_id     = each.value.vm.id
 
   on_boot = true
   tags = distinct(concat(["terraform", "talos", var.cluster.name], each.value.vm.labels))
@@ -11,7 +13,7 @@ resource "proxmox_virtual_environment_vm" "this" {
   machine       = "q35"
   scsi_hardware = "virtio-scsi-single"
   bios          = "ovmf"
-  migrate = true // fails if cdrom is attached
+  migrate       = true // fails if cdrom is attached
 
   agent {
     enabled = true
@@ -29,7 +31,8 @@ resource "proxmox_virtual_environment_vm" "this" {
   }
 
   network_device {
-    model = "virtio"
+    bridge      = "vmbr0"
+    mac_address = each.value.vm.mac_address
   }
 
   efi_disk {
@@ -42,14 +45,18 @@ resource "proxmox_virtual_environment_vm" "this" {
     datastore_id = each.value.vm.disk.datastore_id
     interface    = "scsi0"
     discard      = "on"
+    iothread     = true
+    cache        = "writethrough"
     ssd          = true
     size         = each.value.vm.disk.size
-    file_id      = proxmox_virtual_environment_download_file.this[sha256(jsonencode({
-      node_name    = each.value.vm.datacenter.node
-      datastore_id = each.value.vm.image.datastore_id
-      iso          = each.value.server.talos.iso
+    file_id      = proxmox_virtual_environment_download_file.this[
+    sha256(jsonencode({
+      node_name     = each.value.vm.datacenter.node
+      datastore_id  = each.value.vm.image.datastore_id
+      iso           = each.value.server.talos.iso
       talos_version = each.value.server.talos.version
-    }))].id
+    }))
+    ].id
   }
 
   boot_order = ["scsi0"]
@@ -70,7 +77,7 @@ resource "proxmox_virtual_environment_vm" "this" {
 
     ip_config {
       ipv4 {
-        address = "${each.value.ip}/${var.cluster.subnet_mask}"
+        address = "${each.value.vm.ip}/${var.cluster.subnet_mask}"
         gateway = var.cluster.gateway
       }
     }

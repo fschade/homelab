@@ -30,6 +30,9 @@ locals {
         kubernetes_1_35_0 = {
           version = "v1.35.0"
         }
+        kubernetes_1_35_2 = {
+          version = "v1.35.2"
+        }
         talos_1_12_5 = {
           version   = "v1.12.5"
           iso       = "https://factory.talos.dev/image/b0f2a8b575460a3dcb1234cc081c73c88e795aaef36eda9b88a6f4dddbd49365/v1.12.5/nocloud-amd64.iso"
@@ -48,7 +51,7 @@ locals {
     nodes = {
       common = {
         server = {
-          kubernetes = local.talos_data.nodes.server.kubernetes_1_35_0
+          kubernetes = local.talos_data.nodes.server.kubernetes_1_35_2
           talos      = local.talos_data.nodes.server.talos_1_12_6
         }
       }

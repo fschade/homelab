@@ -17,15 +17,15 @@ data "talos_machine_configuration" "this" {
 
   cluster_name     = var.cluster.name
   machine_type     = each.value.type
-  cluster_endpoint = local.custer_endpoint
+  cluster_endpoint = local.cluster_endpoint
   machine_secrets  = talos_machine_secrets.this.machine_secrets
 
   config_patches = compact(concat(
     // global patches
     [
       templatefile("${path.module}/templates/talos-machine-configuration-data-common.yaml.tftpl", {
-        install_image = each.value.installer
-        cluster_name = var.cluster.name
+        install_image      = each.value.installer
+        region             = var.cluster.name
         kubernetes_version = each.value.kubernetes_version
       })
     ],
@@ -45,7 +45,9 @@ data "talos_machine_configuration" "this" {
 }
 
 resource "talos_machine_configuration_apply" "this" {
-  for_each = var.nodes
+  for_each = {
+    for key, value in var.nodes: coalesce(value.vm.id, key) => value
+  }
 
   client_configuration        = talos_machine_secrets.this.client_configuration
   machine_configuration_input = data.talos_machine_configuration.this[
@@ -56,18 +58,20 @@ resource "talos_machine_configuration_apply" "this" {
     installer          = each.value.server.talos.installer
   }))
   ].machine_configuration
-  node       = each.value.ip
+  node       = each.value.vm.ip
   apply_mode = "auto"
 
   config_patches = compact(concat(
     // global patches
     [
       templatefile("${path.module}/templates/talos-machine-configuration-resource-common.yaml.tftpl", {
-        network_interface = var.cluster.network_interface
-        ip                = each.value.ip
-        subnet_mask       = var.cluster.subnet_mask
-        gateway           = var.cluster.gateway
-        hostname          = each.value.name
+        ip          = each.value.vm.ip
+        subnet_mask = var.cluster.subnet_mask
+        gateway     = var.cluster.gateway
+        hostname    = each.value.name
+        zone        = each.value.vm.datacenter.node
+        mac_address = each.value.vm.mac_address
+        network_interface = each.value.vm.network_interface
       })
     ],
     {
@@ -75,7 +79,7 @@ resource "talos_machine_configuration_apply" "this" {
       (local.CONST.MACHINE_TYPE.CONTROL_PLANE) : [
         templatefile("${path.module}/templates/talos-machine-configuration-resource-controlplane.yaml.tftpl", {
           virtual_shared_ip = var.cluster.virtual_shared_ip
-          network_interface = var.cluster.network_interface
+          network_interface = each.value.vm.network_interface
         }),
       ]
       // WORKER patches
@@ -135,4 +139,9 @@ resource "talos_cluster_kubeconfig" "this" {
   lifecycle {
     replace_triggered_by = [talos_machine_configuration_apply.this]
   }
+}
+
+resource "time_sleep" "talos_cluster_kubeconfig" {
+  depends_on = [talos_cluster_kubeconfig.this]
+  create_duration = "30s"
 }

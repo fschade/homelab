@@ -1,8 +1,10 @@
 machine:
+  nodeLabels:
+    topology.kubernetes.io/region: ${region}
   install:
     image: ${install_image}
-  nodeLabels:
-    topology.kubernetes.io/region: ${cluster_name}
+  kubelet:
+    image: ghcr.io/siderolabs/kubelet:${kubernetes_version}
 cluster:
   apiServer:
     image: registry.k8s.io/kube-apiserver:${kubernetes_version}

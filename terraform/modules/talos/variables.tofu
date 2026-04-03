@@ -1,8 +1,8 @@
 variable "cluster" {
   type = object({
     name    = string
+    endpoint = optional(string)
     virtual_shared_ip = optional(string)
-    network_interface = optional(string, "eth0")
     gateway = string
     subnet_mask = optional(number, 24)
     health_check = optional(object({
@@ -17,9 +17,8 @@ variable "cluster" {
 
 variable "nodes" {
   type = map(object({
-    name = string
-    ip   = string
     type = string
+    name = string
     server = object({
       kubernetes = object({
         version = string
@@ -32,6 +31,9 @@ variable "nodes" {
     })
     vm = object({
       id = optional(number)
+      ip = string
+      mac_address = optional(string)
+      network_interface = optional(string, "eth0")
       datacenter = object({
         node = string
       })
@@ -39,7 +41,7 @@ variable "nodes" {
       cpu = optional(object({
         sockets = optional(number)
         cores = optional(number)
-        type = optional(string, "host")
+        type = optional(string, "x86-64-v2-AES")
       }), {})
       memory = optional(object({
         dedicated = optional(number)

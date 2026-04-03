@@ -25,7 +25,6 @@ variable "talos_cluster" {
   type = object({
     name    = string
     virtual_shared_ip = optional(string)
-    network_interface = optional(string)
     gateway = string
     subnet_mask = optional(number)
     health_check = optional(object({
@@ -40,9 +39,8 @@ variable "talos_cluster" {
 
 variable "talos_nodes" {
   type = map(object({
-    name = string
-    ip   = string
     type = string
+    name = string
     server = optional(object({
       kubernetes = object({
         version = string
@@ -55,6 +53,9 @@ variable "talos_nodes" {
     }))
     vm = object({
       id = optional(number)
+      ip = string
+      mac_address = optional(string)
+      network_interface = optional(string)
       datacenter = object({
         node = string
       })

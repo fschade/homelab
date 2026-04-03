@@ -1,14 +1,20 @@
 machine:
   nodeLabels:
-    topology.kubernetes.io/zone: ${hostname}
+    kubernetes.io/hostname: ${hostname}
+    topology.kubernetes.io/zone: ${zone}
   network:
     interfaces:
+%{ if mac_address != "" ~}
+      - deviceSelector:
+          hardwareAddr: ${lower(mac_address)}
+%{ else ~}
       - interface: ${network_interface}
+%{ endif ~}
         dhcp: false
         addresses:
           - ${ip}/${subnet_mask}
         routes:
-          - network: "0.0.0.0/0"
+          - network: 0.0.0.0/0
             gateway: ${gateway}
 ---
 apiVersion: v1alpha1
