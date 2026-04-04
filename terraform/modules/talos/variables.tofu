@@ -3,8 +3,7 @@ variable "cluster" {
     name    = string
     endpoint = optional(string)
     virtual_shared_ip = optional(string)
-    gateway = string
-    subnet_mask = optional(number, 24)
+    allow_scheduling_on_control_planes = optional(bool, false)
     health_check = optional(object({
       enabled = optional(bool, true)
       skip_kubernetes_checks = optional(bool, false)
@@ -33,6 +32,8 @@ variable "nodes" {
       id = optional(number)
       ip = string
       mac_address = optional(string)
+      gateway = string
+      subnet_mask = optional(number, 24)
       network_interface = optional(string, "eth0")
       datacenter = object({
         node = string

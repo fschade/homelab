@@ -1,14 +1,12 @@
 resource "proxmox_virtual_environment_vm" "this" {
-  for_each = {
-    for key, value in var.nodes: coalesce(value.vm.id, key) => value
-  }
+  for_each = var.nodes
 
   node_name = each.value.vm.datacenter.node
-  name      = each.value.name
+  name = coalesce(each.value.name, each.key)
   vm_id     = each.value.vm.id
 
   on_boot = true
-  tags = distinct(concat(["terraform", "talos", var.cluster.name], each.value.vm.labels))
+  tags = distinct(concat(["terraform", "talos", "kubernetes", "k8s", var.cluster.name], each.value.vm.labels))
 
   machine       = "q35"
   scsi_hardware = "virtio-scsi-single"
@@ -46,16 +44,12 @@ resource "proxmox_virtual_environment_vm" "this" {
     interface    = "scsi0"
     discard      = "on"
     iothread     = true
+    file_format  = "raw"
     cache        = "writethrough"
     ssd          = true
     size         = each.value.vm.disk.size
     file_id      = proxmox_virtual_environment_download_file.this[
-    sha256(jsonencode({
-      node_name     = each.value.vm.datacenter.node
-      datastore_id  = each.value.vm.image.datastore_id
-      iso           = each.value.server.talos.iso
-      talos_version = each.value.server.talos.version
-    }))
+    join("/", [each.value.vm.datacenter.node, each.value.vm.image.datastore_id, each.value.server.talos.version])
     ].id
   }
 
@@ -77,8 +71,8 @@ resource "proxmox_virtual_environment_vm" "this" {
 
     ip_config {
       ipv4 {
-        address = "${each.value.vm.ip}/${var.cluster.subnet_mask}"
-        gateway = var.cluster.gateway
+        address = "${each.value.vm.ip}/${each.value.vm.subnet_mask}"
+        gateway = each.value.vm.gateway
       }
     }
   }
