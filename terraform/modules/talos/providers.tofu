@@ -33,6 +33,7 @@ terraform {
 }
 
 provider "kubernetes" {
+  // config_path = "~/.kube/config"
   host                   = local.kubernetes_config.host
   client_certificate     = local.kubernetes_config.client_certificate
   client_key             = local.kubernetes_config.client_key
@@ -40,5 +41,6 @@ provider "kubernetes" {
 }
 
 provider "helm" {
+  // config_path = "~/.kube/config"
   kubernetes = local.kubernetes_config
 }

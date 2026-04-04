@@ -7,7 +7,7 @@ resource "proxmox_virtual_environment_download_file" "this" {
         iso          = node.server.talos.iso
         talos_version = node.server.talos.version
       }
-    ]) : sha256(jsonencode(mapping)) => mapping
+    ]) : join("/", [mapping.node_name, mapping.datastore_id, mapping.talos_version]) => mapping
   }
 
   node_name    = each.value.node_name

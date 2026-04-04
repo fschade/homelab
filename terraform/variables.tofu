@@ -25,8 +25,7 @@ variable "talos_cluster" {
   type = object({
     name    = string
     virtual_shared_ip = optional(string)
-    gateway = string
-    subnet_mask = optional(number)
+    allow_scheduling_on_control_planes = optional(bool, false)
     health_check = optional(object({
       enabled = optional(bool)
       skip_kubernetes_checks = optional(bool)
@@ -55,6 +54,8 @@ variable "talos_nodes" {
       id = optional(number)
       ip = string
       mac_address = optional(string)
+      gateway = string
+      subnet_mask = optional(number)
       network_interface = optional(string)
       datacenter = object({
         node = string
